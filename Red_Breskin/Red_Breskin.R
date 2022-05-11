@@ -71,80 +71,57 @@ for (i in 1:Nodos) {
 MatrizAdyacencia[]
 write.table(MatrizAdyacencia, "Matriz_A_Breskin.txt") 
 
-red <- graph_from_adjacency_matrix(MatrizAdyacencia)
-plot(red, edge.arrow.size=.000001, edge.curved=0.000001, vertex.size=6,
-     vertex.color="red" , vertex.frame.color="black", vertex.label.color="black",
-     vertex.label.cex=0.00001,edge.color="Gray")
+red_B <- graph_from_adjacency_matrix(MatrizAdyacencia)
 
+#________________________________PROPIEDADES TOPOLÓGICAS DE LA RED______________________________________________
 
-#________________________________________Análisis Topológico __________________________________________
+k<-degree(red_B, mode=c("all")) #Grado de cada nodo
+hist(k, breaks = 30) # Histograma del Grado
+Grado_medio <- mean(k)
+Grado_medio
+gsize(red_B) # Cantidad de enlaces que tiene la red
+gd <- edge_density(red_B) #Densidad de la red= a proporción de enlaces presentes de todos los enlaces posibles en la red
+diameter(red_B, directed=FALSE) # Diametro de la red
+dis<-mean_distance(red_B, directed = F) # Longitud promedio de camino más corto
+dis
+Camino_corto<-get_diameter(red_B) #Nodos de la longitud promedio de camino más corto. Figura 3.6 libro
+Camino_corto
+#Codigo que muestra solo los nodos que creran la lngitud de camino más corto en la red
+longitud_camino<-length(Camino_corto)
+Posicionx_camino_corto<-c()
+Posiciony_camino_corto<-c()
+for (i in 1:longitud_camino) {
+  s<-Camino_corto[i]
+  posix<-Posicionx[s]
+  posiy<-Posiciony[s]
+  Posicionx_camino_corto[i]<-posix
+  Posiciony_camino_corto[i]<-posiy
+}
+Posicionx_camino_corto
 
-# Cantidad de enlaces que tiene la red
-gsize(red)
-# Diametro de la red
-diameter(red, directed=F)
-# Camino de diametro de la red
-get_diameter(red)
+#Graficia los nodos del camino corto
+plot(Posicionx_camino_corto, Posiciony_camino_corto,xlab = "X (mm)",ylab = "Y (mm)", pch = 20,tcl=0.2, color = "Pink",las=1)
 
-# Grado de cada nodo
-k<-degree(red, mode=c("all"))
-#Tabla que muestra nodos tiene grado k
-table(k)
-# Histograma de grado
-hist(k, breaks = 30)
-# Muestra el nodo que tiene mayor grado
-which.max(k)
-#Grafica de distribución de grado
-deg.dist <- degree_distribution(red, cumulative=T, mode="all")
-plot( x=0:max(k), y=1-deg.dist, pch=19, cex=0.5, col="red", 
-      xlab="k", ylab="P(k)")
+centralidad<-centr_clo(red_B, mode="all", normalized=T)# Centralidad de cercania
+nodo_maxima_centralidad<-which.max(closeness)
+nodo_maxima_centralidad
 
-write.table(deg, "Gradonodos.csv") 
-write.table(deg.dist, "Probabilidad_Grado.csv") 
+bett<-betweenness(red_B, directed=T)
+nodo_maxima_centralidad_intermedia<-which.max(bett) #Centralidad de intermediación
+nodo_maxima_centralidad_intermedia
 
-# Centralidad intermedia de cada uno de los nodos
-betweenness_red<-betweenness(red, directed = FALSE, normalized = T)
-# Muestra el histograma de betweenness
-hist(betweenness_red, breaks = 80)
-which.max(betweenness_red)
+Wc <- cluster_walktrap(red_B) 
+modularity(Wc) #Modularidad en la red
 
-# Centralidad de cercania de cada uno de los nodos
-closeness<-closeness(red_H, mode="all")
-which.max(closeness)
-hist(closeness)
-
-# Detecta las comunidades que tiene la red
-kc = fastgreedy.community(red)
-# Determina el tamaño de cada comunidad
-sizes(kc)
-# muestra los nodos que pertenecen a cada comunidad
-membership(kc)
-# Perform edge-betweenness community detection on network graph
-gc = edge.betweenness.community(red)
-# Determine sizes of each community
-sizes(gc)
-
-fc <- cluster_fast_greedy(red)
-membership(fc)
-sizes(fc)
-# Densidad de la red
-gd <- edge_density(red)
-
-# Create numerical vector of vertex eigenvector centralities 
-ec <- as.numeric(eigen_centrality(red) )
-
-#__________________________CALCULO DE LA TASA DE ENTROPIA h __________________________________________________
-
-Num_nodos<-length(V(red)) #Cantidad de nodos de la red
-Num_nodos
-
-MATRIZADY<-MAdyaW
-k<-degree(red)
+#________________________________________________Análisis tasa de entropía________________________________________
+MATRIZADY<-MatrizAdyacencia # Matriz 
+k<-degree(red_B) #Grado de cada nodo
+Num_nodos<-Nodos #Cantidad de nodos en la red
 
 #Se crea la matriz de transición de probabilidad PI vacia
 PI <- matrix(data=0, nrow=Num_nodos, ncol=Num_nodos)
 
-#Se crea un vector que almacenará los valores de la tasa de entropia para cada alpha
+#Se crea un vector que almacenará los valores de la tasa de entropia para cada alpha de -3 a 3
 H<-seq(1,61) 
 
 #Valores del sesgo en los que se va a evaluar la tasa de entropía
@@ -156,7 +133,7 @@ for (i in 1:61) {
 }
 ValoresAlpha[] 
 
-#Calculo de la ecuación de la tasa de entropía para 60 valores de alpha
+#Calculo de la ecuación de la tasa de entropía para 61 valores de alpha
 for (alph in 1:61)
 {
   alpha <- ValoresAlpha[alph]  #En cada paso alpha cambia de valor para calcular h
@@ -233,8 +210,9 @@ for (alph in 1:61)
     mul<-0
     for (j in 1:Num_nodos)
     {
+      mmmm<-PI[i,j]
       # cuando la matriz tiene PI_{i,j}=0 el valor de h se hace cero. ver ecuación. si no calcula el logaritmo natural de PI
-      if (PI[i,j] <= 0) PIlnPIW <-0 else logaritmoN <- ln(PI[i,j])
+      if (mmmm <= 0) PIlnPIW <-0 else logaritmoN <- ln(PI[i,j])
       
       PIlnPIW<--PI[i,j]*Wstar[i]*logaritmoN
       mul<-mul+PIlnPIW
@@ -245,8 +223,11 @@ for (alph in 1:61)
   #_____________________________________________________________________________________________
   #Creación de un txt para guardar los valores de la tasa de entropía en funcion de Alpha
   
-  H(Alpha) <- data.frame(ValoresAlpha,H )
-  write.table(ALPHAvsH, "h(alpha)_red_Bresking.txt")  
+  ALPHAvsH <- data.frame(ValoresAlpha,H )
+  write.table(ALPHAvsH, "h(alpha)_red_Breskin.txt")  
 }
-H(Alpha) # Muestra los resultados de h en funcio de alpha
+ALPHAvsH
+
+plot(ValoresAlpha,H)
+
 
