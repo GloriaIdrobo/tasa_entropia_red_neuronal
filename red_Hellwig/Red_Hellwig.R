@@ -1,5 +1,5 @@
-#_______________________________Creacion,analisis topologico y Calculo de h para la red Hellwig_______________________________
-#Para intalar los paquetes elimine el numeral(#) y corra el codigo
+#_______________________________Creacion, análisis topológico y Calculo de h en funcion de alpha para la red Hellwig_______________________________
+#Para instalar los paquetes elimine el numeral(#) y corra el codigo
 #install.packages("igraph") 
 #install.packages("repr")
 #install.packages("SciViews")
