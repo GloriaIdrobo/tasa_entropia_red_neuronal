@@ -4,7 +4,7 @@ En este repositorio se encuentra los códigos de dos redes neuronales in silico 
 
 - El análisis tológico desde la teoria de redes complejas.
 
-- El proceso difusivo en la red desde Cadenas de Markov.
+- El proceso difusivo en la red a partir de Cadenas de Markov.
 
 - Proceso percolativo.
 
